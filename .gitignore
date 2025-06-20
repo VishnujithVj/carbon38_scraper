@@ -1,0 +1,10 @@
+# Virtual environment
+carbon38env/
+
+# Python cache
+_pycache_/
+*.pyc
+
+# Scraped output files
+Carbon38_data.json
+Carbon38_data.csv

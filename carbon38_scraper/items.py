@@ -22,3 +22,4 @@ class Carbon38ScraperItem(scrapy.Item):
     product_url = scrapy.Field()
     image_urls = scrapy.Field()
     pass
+

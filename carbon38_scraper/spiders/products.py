@@ -1,54 +1,62 @@
 import scrapy
 import json
+from w3lib.html import remove_tags
 from carbon38_scraper.items import Carbon38ScraperItem
 
 class CarbonSpider(scrapy.Spider):
     name = "carbon"
     allowed_domains = ["carbon38.com"]
-    base_url = "https://www.carbon38.com/en-in/collections/tops"
-    page_number = 1
-
-    def start_requests(self):
-        yield scrapy.Request(
-            url=f"{self.base_url}?page=1&filter.p.m.custom.available_or_waitlist=1",
-            callback=self.parse
-        )
+    start_urls = ["https://carbon38.com/en-in/collections/tops"]
 
     def parse(self, response):
-        # Extract embedded JSON from <script> tag
-        script_data = response.xpath('//script[contains(text(), "__INITIAL_STATE__")]/text()').get()
-        if not script_data:
-            self.logger.warning("⚠️ No embedded product JSON found.")
+        product_links = response.css("h2.ProductItem__Title a::attr(href)").getall()
+        if not product_links:
+            self.logger.warning("⚠️ No product links found on page.")
+        for link in product_links:
+            yield response.follow(link, callback=self.parse_product)
+
+        next_page = response.css('a[rel="next"]::attr(href)').get()
+        if next_page:
+            yield response.follow(next_page, callback=self.parse)
+
+    def parse_product(self, response):
+        json_text = response.xpath(
+            '//script[@type="application/json" and @data-product-json]/text()'
+        ).get()
+        if not json_text:
+            self.logger.warning(f"No JSON found on: {response.url}")
             return
 
-        try:
-            # Safely extract JSON string
-            json_str = script_data.split('=')[1].strip().rstrip(';')
-            data = json.loads(json_str)
-            products = data.get('collection', {}).get('products', [])
-        except Exception as e:
-            self.logger.error(f"❌ JSON parsing failed: {e}")
-            return
+        data = json.loads(json_text)
+        product = data.get("product", {})
+        variants = product.get("variants", [])
 
-        for product in products:
-            item = Carbon38ScraperItem()
-            item['breadcrumbs'] = ["Home", "Collections", "All Products", product.get("title")]
-            item['primary_image_url'] = "https:" + product.get("featured_image", "")
-            item['brand'] = product.get("vendor")
-            item['product_name'] = product.get("title")
-            item['price'] = f"₹{product.get('price', 0) / 100:.2f}"
-            item['reviews'] = "0 Reviews"  # Can be enriched later with full detail scraping
-            item['colour'] = product['variants'][0].get('option1') if product.get("variants") else ""
-            item['sizes'] = [v.get('option2') for v in product.get('variants', [])]
-            item['description'] = product.get("description", "")
-            item['sku'] = product['variants'][0].get('sku') if product.get("variants") else ""
-            item['product_id'] = str(product.get("id"))
-            item['product_url'] = response.urljoin("/en-in/products/" + product.get("handle"))
-            item['image_urls'] = ["https:" + img for img in product.get('images', [])]
-            yield item
+        item = Carbon38ScraperItem()
+        item["breadcrumbs"] = ["Home", "Collections", "Tops", product.get("title")]
+        featured = product.get("featured_image") or ""
+        item["primary_image_url"] = "https:" + featured if featured else ""
+        item["brand"] = product.get("vendor", "")
+        item["product_name"] = product.get("title", "")
 
-        # Continue to next page if products exist
-        if products:
-            self.page_number += 1
-            next_page_url = f"{self.base_url}?page={self.page_number}&filter.p.m.custom.available_or_waitlist=1"
-            yield response.follow(next_page_url, callback=self.parse)
+        if variants:
+            price_int = int(variants[0].get("price", 0))
+            item["price"] = f"₹{price_int/100:.2f}"
+            item["colour"] = variants[0].get("option1", "")
+            item["sizes"] = [v.get("option2", "") for v in variants if v.get("option2")]
+            item["sku"] = variants[0].get("sku", "")
+        else:
+            item["price"] = "₹0.00"
+            item["colour"] = ""
+            item["sizes"] = []
+            item["sku"] = ""
+
+        description = product.get("description") or ""
+        item["description"] = remove_tags(description).strip()
+        item["reviews"] = "0 Reviews"
+        item["product_id"] = str(product.get("id", ""))
+        item["product_url"] = response.url
+        item["image_urls"] = [
+            "https:" + img for img in product.get("images", []) if img
+        ]
+
+        yield item

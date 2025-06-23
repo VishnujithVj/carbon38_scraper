@@ -1,4 +1,55 @@
 # Scrapy settings for carbon38_scraper project
+
+BOT_NAME = "carbon38_scraper"
+
+SPIDER_MODULES = ["carbon38_scraper.spiders"]
+NEWSPIDER_MODULE = "carbon38_scraper.spiders"
+
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+ROBOTSTXT_OBEY = True
+DOWNLOAD_DELAY = 2
+FEED_EXPORT_ENCODING = "utf-8"
+
+# TEMP: Only for testing
+# CLOSESPIDER_ITEMCOUNT = 5
+
+# Optional: Smooth automatic crawling
+# AUTOTHROTTLE_ENABLED = True
+# AUTOTHROTTLE_START_DELAY = 1
+# AUTOTHROTTLE_MAX_DELAY = 10
+# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Scrapy settings for carbon38_scraper project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,19 +58,19 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "carbon38_scraper"
+# BOT_NAME = "carbon38_scraper"
 
-SPIDER_MODULES = ["carbon38_scraper.spiders"]
-NEWSPIDER_MODULE = "carbon38_scraper.spiders"
+# SPIDER_MODULES = ["carbon38_scraper.spiders"]
+# NEWSPIDER_MODULE = "carbon38_scraper.spiders"
 
-ADDONS = {}
+# ADDONS = {}
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "carbon38_scraper (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+# ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -90,4 +141,4 @@ ROBOTSTXT_OBEY = True
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-FEED_EXPORT_ENCODING = "utf-8"
+# FEED_EXPORT_ENCODING = "utf-8"

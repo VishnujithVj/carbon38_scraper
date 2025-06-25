@@ -1,4 +1,4 @@
-# 🛍️ Carbon38 Scraper Project
+# Carbon38 Scraper Project
 
 This Scrapy project scrapes product data (tops) from the Carbon38 website.
 
